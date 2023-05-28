@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+   k-means-spark:
+       container_name: k-means-spar
+       build:
+           context: .
+           dockerfile: dockerfiles/Dockerfile_main
+       command: bash -c "python src/kmeans.py"
+       image: olegggatttor/k-means-spark:latest
+       ports:
+           - "4040:4040"
+           - "8888:8888"
+       depends_on:
+           clickhouse:
+               condition: service_healthy
+
+   clickhouse:
+       container_name: clickhouse
+       platform: linux/amd64
+       image: yandex/clickhouse-server
+       ports:
+           - "9000:9000"
+           - "8123:8123"
+       volumes:
+           - ./data/en.openfoodfacts.org.products.csv:/var/lib/clickhouse/user_files/en.openfoodfacts.org.products.csv
+           - ./clickhouse_scripts/init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
+       healthcheck:
+           test: [ "CMD", "wget", "--spider", "-q", "localhost:8123/ping" ]
+           interval: 30s
+           timeout: 5s
+           retries: 3

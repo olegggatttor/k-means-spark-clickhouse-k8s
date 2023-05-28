@@ -35,7 +35,7 @@ class PySparkKMeans:
     def predict(self, raw_test_df: DataFrame) -> DataFrame:
         assert self._model is not None, "Model is not trained."
 
-        return self._model.transform(raw_test_df)
+        return self._model.transform(transform(raw_test_df))
 
     def save_model(self, path):
         self._model.save(path)
