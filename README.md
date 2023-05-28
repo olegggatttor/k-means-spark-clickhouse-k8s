@@ -18,4 +18,4 @@ Data was preprocessed with removing of unimportant features and null columns fil
 4. [Training with ClickHouse using docker-compose](docker-compose.yml)
 
 
-Consider put *clickhouse-jdbc-0.4.6-all.jar* in [jars](jars) folder (used for clickhouse connection).
+Consider put [clickhouse-jdbc-0.4.6-all.jar](https://github.com/ClickHouse/clickhouse-java/releases/download/v0.4.6/clickhouse-jdbc-0.4.6-all.jar) in [jars](jars) folder (used for clickhouse connection).
