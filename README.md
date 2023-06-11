@@ -8,7 +8,8 @@ OpenFoodFacts dataset consists of the descriptions of different food products. M
 
 ## Data preparation
 
-Data was preprocessed with removing of unimportant features and null columns filling.
+Data was preprocessed with removing of unimportant features, null columns filling and scaling. Preprocessing was done
+on Scala side. Preprocessed data was obtained by model service from data mart and predictions are saved by data mart either.
 
 ## Project structure
 
