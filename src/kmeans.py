@@ -1,23 +1,24 @@
 import argparse
-from pyspark.sql import SparkSession
-
-from preprocessing.load_data import load, write_ch
+from pyspark.sql import SparkSession, SQLContext, DataFrame
 from model import PySparkKMeans
 
 
-def main(spark, dbtable: str, save_path: str, params: dict):
-    df = load(spark, dbtable)
+def main(spark, params: dict):
+    sc = spark.sparkContext
+    sqlContext = SQLContext(spark)
+    jvm_df = sc._jvm.utils.DataMart.getTrainDataset()
+    df = DataFrame(jvm_df, sqlContext)
+
     trainer = PySparkKMeans(df, params)
     trainer.train()
 
     preds = trainer.predict(df).select("prediction")
-    write_ch(preds, "datasets.openfood_predictions")
+
+    sc._jvm.utils.DataMart.writePredictionsToClickhouse(preds._jdf)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train_path", default="datasets.openfood", required=False)
-    parser.add_argument("--save_path", default="../data/openfood_kmeans.model", required=False)
     parser.add_argument("--k", default=2, required=False)
     parser.add_argument("--max_iter", default=5, required=False)
     args = parser.parse_args()
@@ -29,6 +30,7 @@ if __name__ == '__main__':
                 .config("spark.driver.memory", "4g") \
                 .config("spark.executor.memory", "10g") \
                 .config("spark.driver.extraClassPath", "jars/clickhouse-jdbc-0.4.6-all.jar") \
+                .config("spark.jars", "scala/data-mart/target/scala-2.12/data-mart_2.12-0.1.0-SNAPSHOT.jar") \
                 .getOrCreate()
 
-    main(spark, args.train_path, args.save_path, {"k": args.k, "max_iter": args.max_iter})
+    main(spark, {"k": args.k, "max_iter": args.max_iter})
