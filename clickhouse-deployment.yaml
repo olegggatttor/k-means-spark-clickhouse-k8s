@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: clickhouse
+  name: clickhouse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: clickhouse
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/k-means-pyspark-default: "true"
+        io.kompose.service: clickhouse
+    spec:
+      containers:
+        - image: yandex/clickhouse-server
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - --spider
+                - -q
+                - localhost:8123/ping
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 5
+          name: clickhouse
+          ports:
+            - containerPort: 9000
+            - containerPort: 8123
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/clickhouse/user_files/en.openfoodfacts.org.products.csv
+              name: clickhouse-data
+            - mountPath: /docker-entrypoint-initdb.d/init_db.sh
+              name: clickhouse-init-script
+      restartPolicy: Always
+      volumes:
+        - name: clickhouse-data
+          hostPath:
+            path: /data/en.openfoodfacts.org.products.csv
+        - name: clickhouse-init-script
+          hostPath:
+            path: /data/init_db.sh
+status: {}

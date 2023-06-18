@@ -3,3 +3,5 @@ env/
 .bsp
 project
 target
+src/__pycache__/
+jars/
